@@ -1,7 +1,7 @@
 <!-- Rentwereld Financing Calculator (drop-in block)
-     - No Tailwind / no external fonts
+     - No Tailwind / no external fonts by default
+     - Font handling: uses page font if present; on "plain" pages (Arial/Times/serif) loads Inter as fallback
      - Namespaced CSS (.rw-fin-*) to avoid collisions
-     - Uses theme fonts by default (inherits), colors via CSS variables
      - Works with multiple instances on the same page
 -->
 <section class="rw-fin" data-rw-finance-calculator
@@ -23,8 +23,9 @@
       --rw-shadow:0 8px 30px rgba(0,0,0,.06);
       --rw-shadow-soft:0 2px 12px rgba(0,0,0,.04);
 
+      /* Font is controlled via JS by setting --rw-font-family */
+      font-family: var(--rw-font-family, inherit);
       color: var(--rw-black);
-      font-family: inherit; /* inherit theme */
     }
 
     .rw-fin *{ box-sizing:border-box; }
@@ -56,9 +57,7 @@
       margin:0 auto;
       padding: clamp(24px, 3.5vw, 56px) 16px;
     }
-    /* Top area stays white; reduce bottom padding so gray band starts naturally */
     .rw-fin__wrap--top{ padding-bottom: 0; }
-    /* Band content should not add extra vertical padding (band controls it) */
     .rw-fin__wrap--band{ padding: 0 16px; }
 
     .rw-fin__title{
@@ -112,7 +111,6 @@
       align-items:flex-end;
       justify-content:space-between;
       box-shadow: var(--rw-shadow-soft);
-      margin-bottom: 0; /* important: no gap above gray band */
     }
     .rw-fin__infoLeft{ flex:1; min-width: 0; }
     .rw-fin__card{
@@ -185,9 +183,9 @@
     .rw-fin__arrow{ transition: transform .15s ease; }
     .rw-fin__btnBlack:hover .rw-fin__arrow{ transform: translateX(3px); }
 
-    /* ===== Gray band (full-width like site sections) ===== */
+    /* ===== Gray band (MUST reach up to end of info block) ===== */
     .rw-fin__band{
-      margin-top: 0; /* ✅ moved up to touch end of info block */
+      margin-top: 0;              /* critical: no gap between yellow info and gray */
       background: var(--rw-gray);
       padding: clamp(18px, 2.8vw, 34px) 0 clamp(34px, 4.2vw, 96px);
     }
@@ -308,7 +306,6 @@
     .rw-fin__btnCalc:hover{ transform: translateY(-1px); filter: brightness(1.03); }
     .rw-fin__btnCalc:active{ transform: translateY(0); filter:none; }
 
-    /* Result */
     .rw-fin__resHead{
       margin:0;
       font-size:22px;
@@ -321,7 +318,6 @@
       display:inline-block;
       padding-bottom: 6px;
       border-bottom: 2px solid rgba(0,0,0,0.75);
-      letter-spacing: 0;
       text-transform: none;
     }
     .rw-fin__badge{
@@ -444,6 +440,37 @@
 
   <script>
     (function(){
+      /* ========= Font fix (robust across GitHub, CMS, Rentwereld pages) =========
+         - If the host page already provides a non-default brand font, we reuse it.
+         - If the host page falls back to Arial/Times/serif (common on GitHub preview),
+           we load Inter (only then) and use it.
+      */
+      function ensureFontFor(root){
+        try{
+          const bodyFont = (getComputedStyle(document.body).fontFamily || '').toLowerCase();
+          const looksDefault = /(^$|arial|times|serif|georgia)/i.test(bodyFont);
+
+          if (!looksDefault){
+            root.style.setProperty('--rw-font-family', getComputedStyle(document.body).fontFamily);
+            return;
+          }
+
+          // Load Inter once as fallback
+          if (!document.getElementById('rw-fin-inter-font')){
+            const link = document.createElement('link');
+            link.id = 'rw-fin-inter-font';
+            link.rel = 'stylesheet';
+            link.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap';
+            document.head.appendChild(link);
+          }
+
+          root.style.setProperty('--rw-font-family', '"Inter", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif');
+        }catch(e){
+          // last-resort: never break layout
+          root.style.setProperty('--rw-font-family', 'system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif');
+        }
+      }
+
       const factors = {
         "10": { "48": 2.31, "54": 2.08, "60": 1.90 },
         "20": { "48": 2.12, "54": 1.92, "60": null }
@@ -497,6 +524,9 @@
       };
 
       document.querySelectorAll('[data-rw-finance-calculator]').forEach((root) => {
+        // Apply font strategy per instance
+        ensureFontFor(root);
+
         const els = {
           tabs: root.querySelectorAll('[data-rw-tab]'),
           infoLeft: root.querySelector('[data-rw-info-left]'),
@@ -513,6 +543,8 @@
 
         const cfg = {
           ctaUrl: root.getAttribute('data-cta-url') || '#',
+          ctaText: root.getAttribute('data-cta-text') || 'Kostenloses Angebot',
+          phone: root.getAttribute('data-phone') || '',
           homeUrl: root.getAttribute('data-home-url') || '#',
           aboutUrl: root.getAttribute('data-about-url') || '#'
         };
@@ -574,9 +606,17 @@
           const { raw, price, duration, residual } = getInputs();
 
           const allPresent = !!raw && !!duration && !!residual;
-          if (!allPresent) { setBadgeVisible(true); setResult('0,00 €'); return; }
+          if (!allPresent) {
+            setBadgeVisible(true);
+            setResult('0,00 €');
+            return;
+          }
 
-          if (!Number.isFinite(price) || price <= 0) { setBadgeVisible(true); setResult('0,00 €'); return; }
+          if (!Number.isFinite(price) || price <= 0) {
+            setBadgeVisible(true);
+            setResult('0,00 €');
+            return;
+          }
 
           const factor = (factors[residual] || {})[duration];
           if (factor === null || typeof factor === 'undefined') {
@@ -609,21 +649,32 @@
           setResult('0,00 €');
         }
 
+        // Tabs
         els.tabs.forEach(btn => {
           btn.addEventListener('click', () => setActiveTab(btn.getAttribute('data-rw-tab')));
         });
 
+        // Calculate ONLY on click
         els.calcBtn?.addEventListener('click', () => calculate());
 
-        els.duration?.addEventListener('change', () => { refreshOptionAvailability(); resetOutput(); });
-        els.residual?.addEventListener('change', () => { refreshOptionAvailability(); resetOutput(); });
+        // Keep combinations valid; clear output when inputs change
+        els.duration?.addEventListener('change', () => {
+          refreshOptionAvailability();
+          resetOutput();
+        });
+        els.residual?.addEventListener('change', () => {
+          refreshOptionAvailability();
+          resetOutput();
+        });
         els.price?.addEventListener('input', () => resetOutput());
 
+        // Format price on blur (professional polish for DE)
         els.price?.addEventListener('blur', () => {
           const n = parseDeNumber(els.price.value);
           if (Number.isFinite(n) && n > 0) els.price.value = formatDeInput(n);
         });
 
+        // Init
         refreshOptionAvailability();
         setActiveTab('fin');
         resetOutput();
