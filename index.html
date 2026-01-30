@@ -1,25 +1,36 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rentwereld Finanzierung Rechner</title>
+
+  <!-- OPTIONAL (nur falls du eine Webfont laden willst):
+       1) Wenn Rentwereld z.B. Google Fonts nutzt, füge hier den <link> ein.
+       2) Oder verlinke deine eigene font.css im Repo.
+  -->
+  <!-- <link rel="stylesheet" href="PATH_ZU_DEINER_FONT_CSS.css"> -->
+
+  <style>
+    /* Nur damit GitHub-Seite neutral aussieht – beeinflusst den Rechner nicht. */
+    body { margin: 0; }
+  </style>
+</head>
+
+<body>
+
 <!-- Rentwereld Financing Calculator (drop-in block)
      - No Tailwind / no external fonts
      - Namespaced CSS (.rw-fin-*) to avoid collisions
-     - Uses theme fonts by default (inherits), colors via CSS variables
+     - Uses controlled font via CSS variable (fixes GitHub Arial fallback)
      - Works with multiple instances on the same page
-
-     FONT FIX (GitHub):
-     - Set data-font-family to the Rentwereld font stack (e.g. "Inter, ...")
-     - If Rentwereld uses a webfont, also set data-font-css-url (a CSS file that defines @font-face or imports the font).
 -->
 <section class="rw-fin" data-rw-finance-calculator
   data-cta-url="https://www.rentwereld.nl/de/kontakt/"
   data-cta-text="Kostenloses Angebot"
   data-phone="+31(0)85 - 250 00 57"
   data-home-url="https://www.rentwereld.nl/de/"
-  data-about-url="https://www.rentwereld.nl/de/uber-uns/"
-
-  <!-- ✅ Set this to Rentwereld's actual font-family (recommended) -->
-  data-font-family="inherit"
-  <!-- ✅ Optional: URL to a CSS that loads/defines the font (e.g. a Google Fonts link or a site-hosted font CSS) -->
-  data-font-css-url=""
->
+  data-about-url="https://www.rentwereld.nl/de/uber-uns/">
 
   <style>
     /* ===== Scoped variables (adjust once if needed) ===== */
@@ -33,15 +44,18 @@
       --rw-shadow:0 8px 30px rgba(0,0,0,.06);
       --rw-shadow-soft:0 2px 12px rgba(0,0,0,.04);
 
-      color: var(--rw-black);
+      /* ✅ FONT FIX:
+         Setze hier die gewünschte Schrift. Sobald du die Rentwereld-Font-Family kennst,
+         ersetze diese Zeile 1:1 durch deren Stack.
+         Beispiel (Platzhalter): --rw-font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      */
+      --rw-font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 
-      /* ✅ FONT: defaults to inherit (keeps Rentwereld site identical),
-            but can be overridden via JS setting --rw-font-family */
-      --rw-font-family: inherit;
+      color: var(--rw-black);
       font-family: var(--rw-font-family);
     }
 
-    /* Ensure form controls & buttons inherit font consistently across browsers */
+    /* Ensure controls inherit same font (Browser setzen sonst gern Arial) */
     .rw-fin button,
     .rw-fin input,
     .rw-fin select,
@@ -81,9 +95,7 @@
       margin:0 auto;
       padding: clamp(24px, 3.5vw, 56px) 16px;
     }
-    /* Top area stays white; reduce bottom padding so gray band starts naturally */
     .rw-fin__wrap--top{ padding-bottom: 0; }
-    /* Band content should not add extra vertical padding (band controls it) */
     .rw-fin__wrap--band{ padding: 0 16px; }
 
     .rw-fin__title{
@@ -95,7 +107,7 @@
     }
     .rw-fin__title span{ color: var(--rw-yellow); }
 
-    /* ===== Tabs (connected, square-ish, thin border) ===== */
+    /* ===== Tabs ===== */
     .rw-fin__tabs{
       display:flex;
       gap:0;
@@ -209,11 +221,10 @@
     .rw-fin__arrow{ transition: transform .15s ease; }
     .rw-fin__btnBlack:hover .rw-fin__arrow{ transform: translateX(3px); }
 
-    /* ===== Gray band (full-width like site sections) ===== */
+    /* ===== Gray band ===== */
     .rw-fin__band{
       margin-top: 22px;
       background: var(--rw-gray);
-      /* keep top similar, enlarge mainly sides (full width) + bottom */
       padding: clamp(18px, 2.8vw, 34px) 0 clamp(34px, 4.2vw, 96px);
     }
 
@@ -227,7 +238,6 @@
     .rw-fin__calcGrid{
       display:grid;
       grid-template-columns: 1fr 0.85fr;
-      /* +20% height to match screenshots */
       min-height: 528px;
     }
     @media (max-width: 900px){
@@ -236,12 +246,10 @@
 
     .rw-fin__left{
       padding: clamp(18px, 2.8vw, 40px);
-      /* extend the panel mainly at the bottom */
       padding-bottom: clamp(28px, 3.6vw, 64px);
     }
     .rw-fin__right{
       padding: clamp(18px, 2.8vw, 40px);
-      /* extend the panel mainly at the bottom */
       padding-bottom: clamp(34px, 4.2vw, 96px);
       background: var(--rw-yellow);
       display:flex;
@@ -259,7 +267,6 @@
     .rw-fin__line{
       height:1px;
       background: rgba(0,0,0,0.20);
-      /* match input/select width */
       width: 100%;
       max-width: 560px;
       margin: 16px auto 26px;
@@ -298,7 +305,6 @@
       background: rgba(255,255,255,0.65);
     }
 
-    /* Make selects look like inputs (sharp, consistent) */
     select.rw-fin__control{
       -webkit-appearance: none;
       appearance: none;
@@ -390,15 +396,10 @@
       max-width: 360px;
     }
 
-    .rw-fin__resBlock{
-      margin-top: 96px;
-    }
+    .rw-fin__resBlock{ margin-top: 96px; }
+    .rw-fin__rateMeta{ margin-top: -18px; }
 
-    .rw-fin__rateMeta{
-      margin-top: -18px;
-    }
-
-    /* ===== Contact CTA (site rhythm) ===== */
+    /* ===== Contact CTA ===== */
     .rw-fin__cta{
       margin-top: 18px;
       background: #000;
@@ -472,7 +473,6 @@
         <span class="rw-fin__arrow" aria-hidden="true">→</span>
       </a>
     </section>
-
   </div>
 
   <div class="rw-fin__band" aria-label="Rechner Bereich">
@@ -533,7 +533,6 @@
         </div>
       </section>
 
-      <!-- Contact CTA to match site rhythm -->
       <section class="rw-fin__cta" aria-label="Kontakt CTA">
         <div>
           <h3 class="rw-fin__ctaTitle">Mieten ohne Hektik? <span>Fordern Sie ein Angebot an.</span></h3>
@@ -563,14 +562,13 @@
         return new Intl.NumberFormat('de-DE', { style:'currency', currency:'EUR' }).format(val);
       }
 
-      // "10.000,50" / "10000,50" / "10 000,50" -> 10000.50
       function parseDeNumber(input){
         const s = String(input || '')
           .trim()
           .replace(/\s+/g, '')
           .replace(/’/g,'')
-          .replace(/\./g, '')     // remove thousand dots
-          .replace(/,/g, '.');    // decimal comma to dot
+          .replace(/\./g, '')
+          .replace(/,/g, '.');
         const n = Number(s);
         return Number.isFinite(n) ? n : NaN;
       }
@@ -607,24 +605,6 @@
         })
       };
 
-      // Inject external font CSS only once per URL
-      function ensureFontCss(url){
-        if (!url) return;
-        const key = 'rwFinFont:' + url;
-        if (document.documentElement.dataset[key]) return;
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = url;
-        document.head.appendChild(link);
-        // dataset keys can't contain ":" reliably across tooling; store in a map-like attr instead
-        // (use a safe attribute marker)
-        const marker = 'data-rw-fin-font-loaded';
-        const prev = document.documentElement.getAttribute(marker) || '';
-        if (!prev.includes(url)) {
-          document.documentElement.setAttribute(marker, (prev ? (prev + '|') : '') + url);
-        }
-      }
-
       document.querySelectorAll('[data-rw-finance-calculator]').forEach((root) => {
         const els = {
           tabs: root.querySelectorAll('[data-rw-tab]'),
@@ -649,19 +629,8 @@
           ctaText: root.getAttribute('data-cta-text') || 'Kostenloses Angebot',
           phone: root.getAttribute('data-phone') || '',
           homeUrl: root.getAttribute('data-home-url') || '#',
-          aboutUrl: root.getAttribute('data-about-url') || '#',
-
-          // ✅ FONT config
-          fontFamily: root.getAttribute('data-font-family') || 'inherit',
-          fontCssUrl: root.getAttribute('data-font-css-url') || ''
+          aboutUrl: root.getAttribute('data-about-url') || '#'
         };
-
-        // ✅ Load font CSS if provided (GitHub use-case)
-        if (cfg.fontCssUrl) ensureFontCss(cfg.fontCssUrl);
-
-        // ✅ Apply font family (doesn't touch layout/JS logic)
-        // Use CSS variable so everything stays scoped.
-        root.style.setProperty('--rw-font-family', cfg.fontFamily);
 
         if (els.cta) els.cta.href = cfg.ctaUrl;
         if (els.ctaText) els.ctaText.textContent = cfg.ctaText;
@@ -720,7 +689,7 @@
           }
         }
 
-        function calculate(showErrors){
+        function calculate(){
           const { raw, price, duration, residual } = getInputs();
 
           const allPresent = !!raw && !!duration && !!residual;
@@ -739,8 +708,7 @@
           const factor = (factors[residual] || {})[duration];
           if (factor === null || typeof factor === 'undefined') {
             setBadgeVisible(true);
-            setResult(`Kombination
-nicht möglich`);
+            setResult(`Kombination\nnicht möglich`);
             return;
           }
 
@@ -768,17 +736,14 @@ nicht möglich`);
           setResult('0,00 €');
         }
 
-        // Tabs
         els.tabs.forEach(btn => {
           btn.addEventListener('click', () => setActiveTab(btn.getAttribute('data-rw-tab')));
         });
 
-        // Calculate ONLY on click
         if (els.calcBtn){
-          els.calcBtn.addEventListener('click', () => calculate(true));
+          els.calcBtn.addEventListener('click', () => calculate());
         }
 
-        // Keep combinations valid; clear output when inputs change
         els.duration?.addEventListener('change', () => {
           refreshOptionAvailability();
           resetOutput();
@@ -789,75 +754,18 @@ nicht möglich`);
         });
         els.price?.addEventListener('input', () => resetOutput());
 
-        // Format price on blur (professional polish for DE)
         els.price?.addEventListener('blur', () => {
           const n = parseDeNumber(els.price.value);
           if (Number.isFinite(n) && n > 0) els.price.value = formatDeInput(n);
         });
 
-        // Init
         refreshOptionAvailability();
         setActiveTab('fin');
         resetOutput();
       });
-
-      // ===== Minimal tests (only with ?rwTest=1) =====
-      (function runTests(){
-        const params = new URLSearchParams(location.search);
-        if (params.get('rwTest') !== '1') return;
-
-        const root = document.querySelector('[data-rw-finance-calculator]');
-        if (!root){
-          console.error('rwTest: no calculator root found');
-          return;
-        }
-
-        const price = root.querySelector('[data-rw-price]');
-        const duration = root.querySelector('[data-rw-duration]');
-        const residual = root.querySelector('[data-rw-residual]');
-        const btn = root.querySelector('[data-rw-calc]');
-        const res = root.querySelector('[data-rw-result]');
-
-        const results = [];
-        const assert = (name, ok) => results.push({ name, ok: !!ok });
-
-        assert('has calculate button', !!btn);
-        assert('calculate button label is Berechnen', btn && btn.textContent.trim() === 'Berechnen');
-        assert('has result display', !!res);
-
-        const note = root.querySelector('.rw-fin__note');
-        assert('note is present', !!note);
-        assert('note text restored', !!note && note.textContent.includes('Die tatsächlichen Konditionen') && !note.textContent.includes('$1'));
-
-        assert('no error element exists', !root.querySelector('[data-rw-error]'));
-
-        const infoBtn = root.querySelector('[data-rw-info-btn]');
-        const cta = root.querySelector('[data-rw-cta]');
-        assert('info button has link', !!infoBtn && infoBtn.href.includes('rentwereld.nl'));
-        assert('cta button has link', !!cta && cta.href.includes('rentwereld.nl'));
-
-        // Valid case (10k, 54 months, 20%) => factor 1.92% => 192€
-        price.value = '10000';
-        duration.value = '54';
-        residual.value = '20';
-        btn.click();
-        assert('valid shows euro symbol', res.textContent.includes('€'));
-
-        // Invalid combo (60 months / 20%)
-        duration.value = '60';
-        duration.dispatchEvent(new Event('change', { bubbles:true }));
-        residual.value = '20';
-        residual.dispatchEvent(new Event('change', { bubbles:true }));
-        btn.click();
-        assert('invalid shows combination not possible', res.textContent.includes('Kombination'));
-
-        // Calculate only on click: change input should reset to 0,00 €
-        price.value = '12000';
-        price.dispatchEvent(new Event('input', { bubbles:true }));
-        assert('editing price resets output', res.textContent.includes('0,00'));
-
-        console.table(results);
-      })();
     })();
   </script>
 </section>
+
+</body>
+</html>
