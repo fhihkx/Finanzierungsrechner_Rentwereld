@@ -1,0 +1,818 @@
+<!-- Rentwereld Financing Calculator (drop-in block)
+     - No Tailwind / no external fonts
+     - Namespaced CSS (.rw-fin-*) to avoid collisions
+     - Uses theme fonts by default (inherits), colors via CSS variables
+     - Works with multiple instances on the same page
+-->
+<section class="rw-fin" data-rw-finance-calculator
+  data-cta-url="https://www.rentwereld.nl/de/kontakt/"
+  data-cta-text="Kostenloses Angebot"
+  data-phone="+31(0)85 - 250 00 57"
+  data-home-url="https://www.rentwereld.nl/de/"
+  data-about-url="https://www.rentwereld.nl/de/uber-uns/">
+
+  <style>
+    /* ===== Scoped variables (adjust once if needed) ===== */
+    .rw-fin{
+      --rw-yellow:#fccb0a;
+      --rw-yellow-hover:#e5b800;
+      --rw-black:#1a1a1a;
+      --rw-gray:#f2f2f2;
+      --rw-border:#6f6f6f;
+      --rw-radius:16px;
+      --rw-shadow:0 8px 30px rgba(0,0,0,.06);
+      --rw-shadow-soft:0 2px 12px rgba(0,0,0,.04);
+
+      color: var(--rw-black);
+      font-family: inherit; /* inherit theme */
+    }
+
+    .rw-fin *{ box-sizing:border-box; }
+    .rw-fin a{ color:inherit; text-decoration:none; }
+
+    /* Rentwereld look: sharp corners (theme-safe) */
+    .rw-fin__tab,
+    .rw-fin__info,
+    .rw-fin__card,
+    .rw-fin__row,
+    .rw-fin__chip,
+    .rw-fin__gray,
+    .rw-fin__calc,
+    .rw-fin__control,
+    .rw-fin__btnBlack,
+    .rw-fin__btnCalc,
+    .rw-fin__badge,
+    .rw-fin__cta,
+    .rw-fin__btnYellow,
+    .rw-fin__phone{
+      border-radius:0 !important;
+    }
+
+    /* Ensure black CTA text stays yellow even if theme styles links/spans */
+    .rw-fin__btnBlack,
+    .rw-fin__btnBlack *{
+      color: var(--rw-yellow) !important;
+    }
+
+    .rw-fin__wrap{
+      max-width:1200px;
+      margin:0 auto;
+      padding: clamp(24px, 3.5vw, 56px) 16px;
+    }
+    /* Top area stays white; reduce bottom padding so gray band starts naturally */
+    .rw-fin__wrap--top{ padding-bottom: 0; }
+    /* Band content should not add extra vertical padding (band controls it) */
+    .rw-fin__wrap--band{ padding: 0 16px; }
+
+    .rw-fin__title{
+      font-weight:900;
+      letter-spacing:-0.02em;
+      line-height:1.05;
+      margin:0 0 18px 0;
+      font-size: clamp(32px, 4.5vw, 56px);
+    }
+    .rw-fin__title span{ color: var(--rw-yellow); }
+
+    /* ===== Tabs (connected, square-ish, thin border) ===== */
+    .rw-fin__tabs{
+      display:flex;
+      gap:0;
+      margin-top: 18px;
+      width: 100%;
+      max-width: 820px;
+    }
+    .rw-fin__tab{
+      flex:1;
+      min-height:72px;
+      padding: 12px 14px;
+      border:1px solid var(--rw-border);
+      background:#fff;
+      font-weight:900;
+      font-size:14px;
+      line-height:1.15;
+      text-align:center;
+      cursor:pointer;
+      transition: background-color .15s ease, color .15s ease, transform .12s ease;
+      user-select:none;
+    }
+    .rw-fin__tab + .rw-fin__tab{ border-left:0; }
+    .rw-fin__tab[aria-selected="true"]{
+      background: var(--rw-yellow);
+      border-color: var(--rw-yellow);
+      z-index:2;
+      position:relative;
+    }
+    .rw-fin__tab:hover{ background:#fafafa; }
+    .rw-fin__tab[aria-selected="true"]:hover{ background: var(--rw-yellow); }
+
+    /* ===== Info panel ===== */
+    .rw-fin__info{
+      margin-top: 0;
+      background: var(--rw-yellow);
+      padding: clamp(18px, 2.4vw, 34px);
+      display:flex;
+      gap: 18px;
+      align-items:flex-end;
+      justify-content:space-between;
+      box-shadow: var(--rw-shadow-soft);
+    }
+    .rw-fin__infoLeft{ flex:1; min-width: 0; }
+    .rw-fin__card{
+      background:#fff;
+      border:1px solid rgba(0,0,0,0.16);
+      padding: 16px 18px;
+      font-size: 15px;
+      line-height: 1.4;
+      font-weight: 500;
+      max-width: 720px;
+    }
+    .rw-fin__stack{ display:grid; gap: 14px; max-width: 760px; }
+    .rw-fin__row{
+      display:grid;
+      grid-template-columns: 34px 1fr;
+      gap: 12px;
+      align-items:flex-start;
+      background:#fff;
+      border:1px solid rgba(0,0,0,0.16);
+      padding: 16px 18px;
+      font-size: 15px;
+      line-height: 1.25;
+      font-weight: 500;
+    }
+    .rw-fin__tick{
+      width:34px;
+      height:auto;
+      background:none;
+      color: var(--rw-yellow);
+      font-size: 26px;
+      line-height: 1;
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      font-weight: 900;
+      margin-top: 2px;
+    }
+    .rw-fin__row b{ font-weight: 900; }
+
+    .rw-fin__process{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      max-width: 720px;
+    }
+    .rw-fin__chip{
+      background:#fff;
+      border:1px solid rgba(0,0,0,0.16);
+      padding: 14px 16px;
+      font-weight: 900;
+      text-align:center;
+      color: rgba(0,0,0,0.70);
+    }
+
+    .rw-fin__btnBlack{
+      background:#000;
+      border:1px solid rgba(0,0,0,0.25);
+      padding: 14px 18px;
+      font-weight: 900;
+      font-size: 12px;
+      letter-spacing: .03em;
+      display:inline-flex;
+      align-items:center;
+      gap: 12px;
+      white-space:nowrap;
+      transition: transform .15s ease, filter .15s ease;
+    }
+    .rw-fin__btnBlack:hover{ transform: translateY(-1px); filter: brightness(1.03); }
+    .rw-fin__btnBlack:active{ transform: translateY(0px); filter:none; }
+    .rw-fin__arrow{ transition: transform .15s ease; }
+    .rw-fin__btnBlack:hover .rw-fin__arrow{ transform: translateX(3px); }
+
+    /* ===== Gray band (full-width like site sections) ===== */
+    .rw-fin__band{
+      margin-top: 22px;
+      background: var(--rw-gray);
+      /* keep top similar, enlarge mainly sides (full width) + bottom */
+      padding: clamp(18px, 2.8vw, 34px) 0 clamp(34px, 4.2vw, 96px);
+    }
+
+    /* ===== Calculator panel ===== */
+    .rw-fin__calc{
+      background:#fff;
+      border:1px solid rgba(0,0,0,0.08);
+      box-shadow: var(--rw-shadow);
+      overflow:hidden;
+    }
+    .rw-fin__calcGrid{
+      display:grid;
+      grid-template-columns: 1fr 0.85fr;
+      /* +20% height to match screenshots */
+      min-height: 528px;
+    }
+    @media (max-width: 900px){
+      .rw-fin__calcGrid{ grid-template-columns: 1fr; }
+    }
+
+    .rw-fin__left{
+      padding: clamp(18px, 2.8vw, 40px);
+      /* extend the panel mainly at the bottom */
+      padding-bottom: clamp(28px, 3.6vw, 64px);
+    }
+    .rw-fin__right{
+      padding: clamp(18px, 2.8vw, 40px);
+      /* extend the panel mainly at the bottom */
+      padding-bottom: clamp(34px, 4.2vw, 96px);
+      background: var(--rw-yellow);
+      display:flex;
+      flex-direction:column;
+      justify-content:flex-start;
+      gap: 18px;
+    }
+
+    .rw-fin__h2{
+      margin:0;
+      font-size:22px;
+      font-weight:900;
+      letter-spacing:0;
+    }
+    .rw-fin__line{
+      height:1px;
+      background: rgba(0,0,0,0.20);
+      /* match input/select width */
+      width: 100%;
+      max-width: 560px;
+      margin: 16px auto 26px;
+    }
+
+    .rw-fin__field{ width:100%; margin: 0 auto 22px; max-width: 560px; }
+    .rw-fin__label{
+      display:block;
+      margin: 0 0 10px;
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+    .rw-fin__control{
+      width:100%;
+      height: 56px;
+      padding: 12px 14px;
+      border:1px solid rgba(0,0,0,0.35);
+      background:#fff;
+      font: inherit;
+      font-size: 16px;
+      font-weight: 600;
+      color: rgba(0,0,0,0.75);
+      outline:none;
+      transition: box-shadow .12s ease, border-color .12s ease;
+    }
+    .rw-fin__control::placeholder{ color: rgba(0,0,0,0.35); font-weight: 600; }
+    .rw-fin__control:focus{
+      border-color: rgba(0,0,0,0.55);
+      box-shadow: 0 0 0 4px rgba(252,203,10,0.28);
+    }
+    .rw-fin__control:disabled{
+      opacity:.6;
+      cursor:not-allowed;
+      background: rgba(255,255,255,0.65);
+    }
+
+    /* Make selects look like inputs (sharp, consistent) */
+    select.rw-fin__control{
+      -webkit-appearance: none;
+      appearance: none;
+      padding-right: 44px;
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%231a1a1a' stroke-width='2'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      background-size: 12px 8px;
+    }
+
+    .rw-fin__actions{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin: 18px auto 0;
+      width: 100%;
+      max-width: 560px;
+    }
+
+    .rw-fin__btnCalc{
+      background:#000;
+      color:#fff;
+      border:0;
+      padding: 18px 36px;
+      min-width: 240px;
+      font-weight: 900;
+      letter-spacing: .02em;
+      text-transform: none;
+      font-size: 12px;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      transition: transform .15s ease, filter .15s ease;
+    }
+    .rw-fin__btnCalc:hover{ transform: translateY(-1px); filter: brightness(1.03); }
+    .rw-fin__btnCalc:active{ transform: translateY(0); filter:none; }
+
+        /* Result */
+    .rw-fin__resHead{
+      margin:0;
+      font-size:22px;
+      font-weight:900;
+      letter-spacing:0;
+    }
+    .rw-fin__resLabel{
+      font-size: 12px;
+      font-weight: 900;
+      display:inline-block;
+      padding-bottom: 6px;
+      border-bottom: 2px solid rgba(0,0,0,0.75);
+      letter-spacing: 0;
+      /* keep natural casing (Monatliche Rate) */
+      text-transform: none;
+    }
+    .rw-fin__badge{
+      display:inline-block;
+      margin-top: 10px;
+      background:#000;
+      color:#fff;
+      padding: 6px 10px;
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+    .rw-fin__badge.is-hidden{ display:none; }
+
+    .rw-fin__resValue{
+      margin-top: 44px;
+      font-size: clamp(34px, 3.8vw, 52px);
+      font-weight: 900;
+      letter-spacing:-0.02em;
+      line-height: 1.05;
+      white-space: pre-line;
+    }
+    .rw-fin__sep{
+      height:2px;
+      background: rgba(0,0,0,0.80);
+      width: min(420px, 100%);
+      /* push separator down to align with bottom of the 3rd dropdown */
+      margin-top: 78px;
+    }
+    .rw-fin__note{
+      margin-top: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.55;
+      color: rgba(0,0,0,0.70);
+      max-width: 360px;
+    }
+
+    .rw-fin__resBlock{
+      /* Align start roughly with the "Laufzeit" block on the left */
+      margin-top: 96px;
+    }
+
+    /* Pull "Monatliche Rate" slightly upward, keeping the value position */
+    .rw-fin__rateMeta{
+      margin-top: -18px;
+    }
+
+    /* ===== Contact CTA (site rhythm) ===== */
+    .rw-fin__cta{
+      margin-top: 18px;
+      background: #000;
+      color: #fff;
+      padding: clamp(18px, 2.8vw, 32px);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+    .rw-fin__ctaTitle{
+      margin:0;
+      font-size: clamp(18px, 2.2vw, 26px);
+      font-weight: 900;
+      line-height: 1.15;
+    }
+    .rw-fin__ctaTitle span{ color: var(--rw-yellow); }
+    .rw-fin__ctaText{
+      margin: 8px 0 0 0;
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.78);
+      max-width: 640px;
+    }
+    .rw-fin__ctaRight{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .rw-fin__btnYellow{
+      background: var(--rw-yellow);
+      color: #000;
+      border:0;
+      padding: 12px 16px;
+      font-weight: 900;
+      /* keep natural casing (Kostenloses Angebot) */
+      text-transform: none;
+      letter-spacing: .02em;
+      font-size: 11px;
+      display:inline-flex;
+      align-items:center;
+      gap: 10px;
+      transition: transform .15s ease, filter .15s ease, background-color .15s ease;
+    }
+    .rw-fin__btnYellow:hover{ background: var(--rw-yellow-hover); transform: translateY(-1px); filter: brightness(1.02); }
+    .rw-fin__btnYellow:active{ transform: translateY(0); filter:none; }
+
+    .rw-fin__phone{
+      font-size: 12px;
+      font-weight: 800;
+      color: rgba(255,255,255,0.88);
+      padding: 10px 12px;
+      border: 1px solid rgba(255,255,255,0.18);
+    }
+  </style>
+
+  <div class="rw-fin__wrap rw-fin__wrap--top">
+    <h1 class="rw-fin__title">Finanzierung<br>nach <span>Maß</span></h1>
+
+    <div class="rw-fin__tabs" role="tablist" aria-label="Finanzierung Tabs">
+      <button class="rw-fin__tab" type="button" role="tab" aria-selected="true" data-rw-tab="fin">Finanzierung</button>
+      <button class="rw-fin__tab" type="button" role="tab" aria-selected="false" data-rw-tab="why">Warum<br>finanzieren?</button>
+      <button class="rw-fin__tab" type="button" role="tab" aria-selected="false" data-rw-tab="pro">Unser Prozess</button>
+    </div>
+
+    <section class="rw-fin__info" aria-label="Info">
+      <div class="rw-fin__infoLeft" data-rw-info-left></div>
+      <a class="rw-fin__btnBlack" data-rw-info-btn href="https://www.rentwereld.nl/de/">
+        <span data-rw-info-btn-text>Mehr erfahren</span>
+        <span class="rw-fin__arrow" aria-hidden="true">→</span>
+      </a>
+    </section>
+
+    </div>
+
+  <div class="rw-fin__band" aria-label="Rechner Bereich">
+    <div class="rw-fin__wrap rw-fin__wrap--band">
+      <section class="rw-fin__calc" aria-label="Finanzierungsrechner">
+        <div class="rw-fin__calcGrid">
+
+          <div class="rw-fin__left">
+            <h2 class="rw-fin__h2">Finanzierungsrechner</h2>
+            <div class="rw-fin__line"></div>
+
+            <div class="rw-fin__field">
+              <label class="rw-fin__label" for="rw-price">Anschaffungspreis | €</label>
+              <input id="rw-price" class="rw-fin__control" type="text" inputmode="decimal" autocomplete="off"
+                     placeholder="0,00" data-rw-price />
+            </div>
+
+            <div class="rw-fin__field">
+              <label class="rw-fin__label" for="rw-duration">Laufzeit | Monate</label>
+              <select id="rw-duration" class="rw-fin__control" data-rw-duration>
+                <option value="" selected>Bitte wählen</option>
+                <option value="48">48</option>
+                <option value="54">54</option>
+                <option value="60">60</option>
+              </select>
+            </div>
+
+            <div class="rw-fin__field">
+              <label class="rw-fin__label" for="rw-residual">Restwert | %</label>
+              <select id="rw-residual" class="rw-fin__control" data-rw-residual>
+                <option value="" selected>Bitte wählen</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+              </select>
+            </div>
+
+            <div class="rw-fin__actions">
+              <button class="rw-fin__btnCalc" type="button" data-rw-calc>Berechnen</button>
+            </div>
+          </div>
+
+          <aside class="rw-fin__right" aria-label="Ergebnis">
+            <p class="rw-fin__resHead">Ergebnis:</p>
+
+            <div class="rw-fin__resBlock">
+            <div class="rw-fin__rateMeta">
+              <div class="rw-fin__resLabel">Monatliche Rate</div>
+              <div class="rw-fin__badge" data-rw-badge>Unverbindliche Angabe</div>
+            </div>
+
+            <div class="rw-fin__resValue" data-rw-result>0,00 €</div>
+
+            <div class="rw-fin__sep"></div>
+            <p class="rw-fin__note">Die tatsächlichen Konditionen hängen u. a. von Objekt, Laufzeit und Bonität ab. Bitte kontaktieren Sie uns für ein verbindliches Angebot.</p>
+            </div>
+          </aside>
+
+        </div>
+      </section>
+
+      <!-- Contact CTA to match site rhythm -->
+      <section class="rw-fin__cta" aria-label="Kontakt CTA">
+        <div>
+          <h3 class="rw-fin__ctaTitle">Mieten ohne Hektik? <span>Fordern Sie ein Angebot an.</span></h3>
+          <p class="rw-fin__ctaText">
+            Sie möchten ein verbindliches Angebot oder haben Fragen zur passenden Laufzeit/Restwert-Kombination? Wir helfen schnell weiter.
+          </p>
+        </div>
+        <div class="rw-fin__ctaRight">
+          <a class="rw-fin__btnYellow" data-rw-cta href="https://www.rentwereld.nl/de/kontakt/">
+            <span data-rw-cta-text>Kostenloses Angebot</span> <span aria-hidden="true">→</span>
+          </a>
+          <span class="rw-fin__phone" data-rw-phone></span>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const factors = {
+        "10": { "48": 2.31, "54": 2.08, "60": 1.90 },
+        "20": { "48": 2.12, "54": 1.92, "60": null }
+      };
+
+      function formatEUR(val){
+        return new Intl.NumberFormat('de-DE', { style:'currency', currency:'EUR' }).format(val);
+      }
+
+      // "10.000,50" / "10000,50" / "10 000,50" -> 10000.50
+      function parseDeNumber(input){
+        const s = String(input || '')
+          .trim()
+          .replace(/\s+/g, '')
+          .replace(/’/g,'')
+          .replace(/\./g, '')     // remove thousand dots
+          .replace(/,/g, '.');    // decimal comma to dot
+        const n = Number(s);
+        return Number.isFinite(n) ? n : NaN;
+      }
+
+      function formatDeInput(n){
+        return new Intl.NumberFormat('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+      }
+
+      const templates = {
+        fin: (homeUrl) => ({
+          left: `<div class="rw-fin__card">
+                  Durch unsere Partner sind wir in der Lage passende Leasing- oder Mietkaufangebote zu liefern.
+                </div>`,
+          btnText: 'Lösungen entdecken',
+          btnHref: homeUrl
+        }),
+        why: (aboutUrl) => ({
+          left: `<div class="rw-fin__stack">
+                  <div class="rw-fin__row"><div class="rw-fin__tick">✓</div><div><b>Liquiditätsschonung:</b><br>Ihr Kapital bleibt frei.</div></div>
+                  <div class="rw-fin__row"><div class="rw-fin__tick">✓</div><div><b>Planungssicherheit:</b><br>Feste Raten über die gesamte Laufzeit.</div></div>
+                  <div class="rw-fin__row"><div class="rw-fin__tick">✓</div><div><b>Steuervorteile:</b><br>Leasingraten können Betriebsausgaben sein.</div></div>
+                </div>`,
+          btnText: 'Mehr erfahren',
+          btnHref: aboutUrl
+        }),
+        pro: (ctaUrl) => ({
+          left: `<div class="rw-fin__process">
+                  <div class="rw-fin__chip">1. Anfrage</div>
+                  <div class="rw-fin__chip">2. Bearbeitung</div>
+                  <div class="rw-fin__chip">3. Vertrag</div>
+                </div>`,
+          btnText: 'Details ansehen',
+          btnHref: ctaUrl
+        })
+      };
+
+      document.querySelectorAll('[data-rw-finance-calculator]').forEach((root) => {
+        const els = {
+          tabs: root.querySelectorAll('[data-rw-tab]'),
+          infoLeft: root.querySelector('[data-rw-info-left]'),
+          infoBtn: root.querySelector('[data-rw-info-btn]'),
+          infoBtnText: root.querySelector('[data-rw-info-btn-text]'),
+
+          price: root.querySelector('[data-rw-price]'),
+          duration: root.querySelector('[data-rw-duration]'),
+          residual: root.querySelector('[data-rw-residual]'),
+          calcBtn: root.querySelector('[data-rw-calc]'),
+          result: root.querySelector('[data-rw-result]'),
+          badge: root.querySelector('[data-rw-badge]'),
+
+          cta: root.querySelector('[data-rw-cta]'),
+          ctaText: root.querySelector('[data-rw-cta-text]'),
+          phone: root.querySelector('[data-rw-phone]')
+        };
+
+        const cfg = {
+          ctaUrl: root.getAttribute('data-cta-url') || '#',
+          ctaText: root.getAttribute('data-cta-text') || 'Kostenloses Angebot',
+          phone: root.getAttribute('data-phone') || '',
+          homeUrl: root.getAttribute('data-home-url') || '#',
+          aboutUrl: root.getAttribute('data-about-url') || '#'
+        };
+
+        if (els.cta) els.cta.href = cfg.ctaUrl;
+        if (els.ctaText) els.ctaText.textContent = cfg.ctaText;
+        if (els.phone) els.phone.textContent = cfg.phone;
+        function setBadgeVisible(visible){
+          if (!els.badge) return;
+          els.badge.classList.toggle('is-hidden', !visible);
+        }
+
+        function setResult(text){
+          if (els.result) els.result.textContent = text;
+        }
+
+        function getInputs(){
+          const raw = els.price?.value ?? '';
+          const price = parseDeNumber(raw);
+          const duration = els.duration?.value ?? '';
+          const residual = els.residual?.value ?? '';
+          return { raw, price, duration, residual };
+        }
+
+        function refreshOptionAvailability(){
+          const duration = els.duration?.value ?? '';
+          const residual = els.residual?.value ?? '';
+
+          if (els.duration){
+            [...els.duration.options].forEach(o => { o.disabled = false; });
+          }
+          if (els.residual){
+            [...els.residual.options].forEach(o => { o.disabled = false; });
+          }
+
+          if (residual && els.duration){
+            [...els.duration.options].forEach(o => {
+              if (!o.value) return;
+              const f = (factors[residual] || {})[o.value];
+              if (f === null || typeof f === 'undefined') o.disabled = true;
+            });
+            if (duration){
+              const f = (factors[residual] || {})[duration];
+              if (f === null || typeof f === 'undefined') els.duration.value = '';
+            }
+          }
+
+          if (duration && els.residual){
+            [...els.residual.options].forEach(o => {
+              if (!o.value) return;
+              const f = (factors[o.value] || {})[duration];
+              if (f === null || typeof f === 'undefined') o.disabled = true;
+            });
+            if (residual){
+              const f = (factors[residual] || {})[duration];
+              if (f === null || typeof f === 'undefined') els.residual.value = '';
+            }
+          }
+        }
+
+        function calculate(showErrors){
+          const { raw, price, duration, residual } = getInputs();
+
+          const allPresent = !!raw && !!duration && !!residual;
+          if (!allPresent) {
+            setBadgeVisible(true);
+            setResult('0,00 €');
+            return;
+          }
+
+          if (!Number.isFinite(price) || price <= 0) {
+            setBadgeVisible(true);
+            setResult('0,00 €');
+            return;
+          }
+
+          const factor = (factors[residual] || {})[duration];
+          if (factor === null || typeof factor === 'undefined') {
+            setBadgeVisible(true);
+            setResult(`Kombination
+nicht möglich`);
+            return;
+          }
+
+          setBadgeVisible(true);
+          setResult(formatEUR(price * (factor / 100)));
+        }
+
+        function setActiveTab(which){
+          els.tabs.forEach(btn => {
+            const active = btn.getAttribute('data-rw-tab') === which;
+            btn.setAttribute('aria-selected', active ? 'true' : 'false');
+          });
+
+          const maker = templates[which] || templates.fin;
+          const arg = which === 'fin' ? cfg.homeUrl : (which === 'why' ? cfg.aboutUrl : cfg.ctaUrl);
+          const resolved = maker(arg);
+
+          if (els.infoLeft) els.infoLeft.innerHTML = resolved.left;
+          if (els.infoBtn) els.infoBtn.href = resolved.btnHref;
+          if (els.infoBtnText) els.infoBtnText.textContent = resolved.btnText;
+        }
+
+        function resetOutput(){
+          setBadgeVisible(true);
+          setResult('0,00 €');
+        }
+
+        // Tabs
+        els.tabs.forEach(btn => {
+          btn.addEventListener('click', () => setActiveTab(btn.getAttribute('data-rw-tab')));
+        });
+
+        // Calculate ONLY on click
+        if (els.calcBtn){
+          els.calcBtn.addEventListener('click', () => calculate(true));
+        }
+
+        // Keep combinations valid; clear output when inputs change
+        els.duration?.addEventListener('change', () => {
+          refreshOptionAvailability();
+          resetOutput();
+        });
+        els.residual?.addEventListener('change', () => {
+          refreshOptionAvailability();
+          resetOutput();
+        });
+        els.price?.addEventListener('input', () => resetOutput());
+
+        // Format price on blur (professional polish for DE)
+        els.price?.addEventListener('blur', () => {
+          const n = parseDeNumber(els.price.value);
+          if (Number.isFinite(n) && n > 0) els.price.value = formatDeInput(n);
+        });
+
+        // Init
+        refreshOptionAvailability();
+        setActiveTab('fin');
+        resetOutput();
+      });
+
+      // ===== Minimal tests (only with ?rwTest=1) =====
+      (function runTests(){
+        const params = new URLSearchParams(location.search);
+        if (params.get('rwTest') !== '1') return;
+
+        const root = document.querySelector('[data-rw-finance-calculator]');
+        if (!root){
+          console.error('rwTest: no calculator root found');
+          return;
+        }
+
+        const price = root.querySelector('[data-rw-price]');
+        const duration = root.querySelector('[data-rw-duration]');
+        const residual = root.querySelector('[data-rw-residual]');
+        const btn = root.querySelector('[data-rw-calc]');
+        const res = root.querySelector('[data-rw-result]');
+
+        const results = [];
+        const assert = (name, ok) => results.push({ name, ok: !!ok });
+
+        assert('has calculate button', !!btn);
+        assert('calculate button label is Berechnen', btn && btn.textContent.trim() === 'Berechnen');
+        assert('has result display', !!res);
+
+        const note = root.querySelector('.rw-fin__note');
+        assert('note is present', !!note);
+        assert('note text restored', !!note && note.textContent.includes('Die tatsächlichen Konditionen') && !note.textContent.includes('$1'));
+
+        assert('no error element exists', !root.querySelector('[data-rw-error]'));
+
+        const infoBtn = root.querySelector('[data-rw-info-btn]');
+        const cta = root.querySelector('[data-rw-cta]');
+        assert('info button has link', !!infoBtn && infoBtn.href.includes('rentwereld.nl'));
+        assert('cta button has link', !!cta && cta.href.includes('rentwereld.nl'));
+
+        // Valid case (10k, 54 months, 20%) => factor 1.92% => 192€
+        price.value = '10000';
+        duration.value = '54';
+        residual.value = '20';
+        btn.click();
+        assert('valid shows euro symbol', res.textContent.includes('€'));
+
+        // Invalid combo (60 months / 20%)
+        duration.value = '60';
+        // ensure UI update (change event)
+        duration.dispatchEvent(new Event('change', { bubbles:true }));
+        // reselect if disabled reset happened
+        residual.value = '20';
+        residual.dispatchEvent(new Event('change', { bubbles:true }));
+        btn.click();
+        assert('invalid shows combination not possible', res.textContent.includes('Kombination'));
+
+        // Calculate only on click: change input should reset to 0,00 €
+        price.value = '12000';
+        price.dispatchEvent(new Event('input', { bubbles:true }));
+        assert('editing price resets output', res.textContent.includes('0,00'));
+
+        console.table(results);
+      })();
+    })();
+  </script>
+</section>
