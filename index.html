@@ -3,13 +3,23 @@
      - Namespaced CSS (.rw-fin-*) to avoid collisions
      - Uses theme fonts by default (inherits), colors via CSS variables
      - Works with multiple instances on the same page
+
+     FONT FIX (GitHub):
+     - Set data-font-family to the Rentwereld font stack (e.g. "Inter, ...")
+     - If Rentwereld uses a webfont, also set data-font-css-url (a CSS file that defines @font-face or imports the font).
 -->
 <section class="rw-fin" data-rw-finance-calculator
   data-cta-url="https://www.rentwereld.nl/de/kontakt/"
   data-cta-text="Kostenloses Angebot"
   data-phone="+31(0)85 - 250 00 57"
   data-home-url="https://www.rentwereld.nl/de/"
-  data-about-url="https://www.rentwereld.nl/de/uber-uns/">
+  data-about-url="https://www.rentwereld.nl/de/uber-uns/"
+
+  <!-- ✅ Set this to Rentwereld's actual font-family (recommended) -->
+  data-font-family="inherit"
+  <!-- ✅ Optional: URL to a CSS that loads/defines the font (e.g. a Google Fonts link or a site-hosted font CSS) -->
+  data-font-css-url=""
+>
 
   <style>
     /* ===== Scoped variables (adjust once if needed) ===== */
@@ -24,7 +34,19 @@
       --rw-shadow-soft:0 2px 12px rgba(0,0,0,.04);
 
       color: var(--rw-black);
-      font-family: inherit; /* inherit theme */
+
+      /* ✅ FONT: defaults to inherit (keeps Rentwereld site identical),
+            but can be overridden via JS setting --rw-font-family */
+      --rw-font-family: inherit;
+      font-family: var(--rw-font-family);
+    }
+
+    /* Ensure form controls & buttons inherit font consistently across browsers */
+    .rw-fin button,
+    .rw-fin input,
+    .rw-fin select,
+    .rw-fin textarea{
+      font-family: inherit;
     }
 
     .rw-fin *{ box-sizing:border-box; }
@@ -316,7 +338,7 @@
     .rw-fin__btnCalc:hover{ transform: translateY(-1px); filter: brightness(1.03); }
     .rw-fin__btnCalc:active{ transform: translateY(0); filter:none; }
 
-        /* Result */
+    /* Result */
     .rw-fin__resHead{
       margin:0;
       font-size:22px;
@@ -330,7 +352,6 @@
       padding-bottom: 6px;
       border-bottom: 2px solid rgba(0,0,0,0.75);
       letter-spacing: 0;
-      /* keep natural casing (Monatliche Rate) */
       text-transform: none;
     }
     .rw-fin__badge{
@@ -358,7 +379,6 @@
       height:2px;
       background: rgba(0,0,0,0.80);
       width: min(420px, 100%);
-      /* push separator down to align with bottom of the 3rd dropdown */
       margin-top: 78px;
     }
     .rw-fin__note{
@@ -371,11 +391,9 @@
     }
 
     .rw-fin__resBlock{
-      /* Align start roughly with the "Laufzeit" block on the left */
       margin-top: 96px;
     }
 
-    /* Pull "Monatliche Rate" slightly upward, keeping the value position */
     .rw-fin__rateMeta{
       margin-top: -18px;
     }
@@ -418,7 +436,6 @@
       border:0;
       padding: 12px 16px;
       font-weight: 900;
-      /* keep natural casing (Kostenloses Angebot) */
       text-transform: none;
       letter-spacing: .02em;
       font-size: 11px;
@@ -456,7 +473,7 @@
       </a>
     </section>
 
-    </div>
+  </div>
 
   <div class="rw-fin__band" aria-label="Rechner Bereich">
     <div class="rw-fin__wrap rw-fin__wrap--band">
@@ -501,15 +518,15 @@
             <p class="rw-fin__resHead">Ergebnis:</p>
 
             <div class="rw-fin__resBlock">
-            <div class="rw-fin__rateMeta">
-              <div class="rw-fin__resLabel">Monatliche Rate</div>
-              <div class="rw-fin__badge" data-rw-badge>Unverbindliche Angabe</div>
-            </div>
+              <div class="rw-fin__rateMeta">
+                <div class="rw-fin__resLabel">Monatliche Rate</div>
+                <div class="rw-fin__badge" data-rw-badge>Unverbindliche Angabe</div>
+              </div>
 
-            <div class="rw-fin__resValue" data-rw-result>0,00 €</div>
+              <div class="rw-fin__resValue" data-rw-result>0,00 €</div>
 
-            <div class="rw-fin__sep"></div>
-            <p class="rw-fin__note">Die tatsächlichen Konditionen hängen u. a. von Objekt, Laufzeit und Bonität ab. Bitte kontaktieren Sie uns für ein verbindliches Angebot.</p>
+              <div class="rw-fin__sep"></div>
+              <p class="rw-fin__note">Die tatsächlichen Konditionen hängen u. a. von Objekt, Laufzeit und Bonität ab. Bitte kontaktieren Sie uns für ein verbindliches Angebot.</p>
             </div>
           </aside>
 
@@ -590,6 +607,24 @@
         })
       };
 
+      // Inject external font CSS only once per URL
+      function ensureFontCss(url){
+        if (!url) return;
+        const key = 'rwFinFont:' + url;
+        if (document.documentElement.dataset[key]) return;
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = url;
+        document.head.appendChild(link);
+        // dataset keys can't contain ":" reliably across tooling; store in a map-like attr instead
+        // (use a safe attribute marker)
+        const marker = 'data-rw-fin-font-loaded';
+        const prev = document.documentElement.getAttribute(marker) || '';
+        if (!prev.includes(url)) {
+          document.documentElement.setAttribute(marker, (prev ? (prev + '|') : '') + url);
+        }
+      }
+
       document.querySelectorAll('[data-rw-finance-calculator]').forEach((root) => {
         const els = {
           tabs: root.querySelectorAll('[data-rw-tab]'),
@@ -614,12 +649,24 @@
           ctaText: root.getAttribute('data-cta-text') || 'Kostenloses Angebot',
           phone: root.getAttribute('data-phone') || '',
           homeUrl: root.getAttribute('data-home-url') || '#',
-          aboutUrl: root.getAttribute('data-about-url') || '#'
+          aboutUrl: root.getAttribute('data-about-url') || '#',
+
+          // ✅ FONT config
+          fontFamily: root.getAttribute('data-font-family') || 'inherit',
+          fontCssUrl: root.getAttribute('data-font-css-url') || ''
         };
+
+        // ✅ Load font CSS if provided (GitHub use-case)
+        if (cfg.fontCssUrl) ensureFontCss(cfg.fontCssUrl);
+
+        // ✅ Apply font family (doesn't touch layout/JS logic)
+        // Use CSS variable so everything stays scoped.
+        root.style.setProperty('--rw-font-family', cfg.fontFamily);
 
         if (els.cta) els.cta.href = cfg.ctaUrl;
         if (els.ctaText) els.ctaText.textContent = cfg.ctaText;
         if (els.phone) els.phone.textContent = cfg.phone;
+
         function setBadgeVisible(visible){
           if (!els.badge) return;
           els.badge.classList.toggle('is-hidden', !visible);
@@ -798,9 +845,7 @@ nicht möglich`);
 
         // Invalid combo (60 months / 20%)
         duration.value = '60';
-        // ensure UI update (change event)
         duration.dispatchEvent(new Event('change', { bubbles:true }));
-        // reselect if disabled reset happened
         residual.value = '20';
         residual.dispatchEvent(new Event('change', { bubbles:true }));
         btn.click();
