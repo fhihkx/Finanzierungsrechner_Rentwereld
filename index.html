@@ -1,28 +1,7 @@
-<!doctype html>
-<html lang="de">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Rentwereld Finanzierung Rechner</title>
-
-  <!-- OPTIONAL (nur falls du eine Webfont laden willst):
-       1) Wenn Rentwereld z.B. Google Fonts nutzt, füge hier den <link> ein.
-       2) Oder verlinke deine eigene font.css im Repo.
-  -->
-  <!-- <link rel="stylesheet" href="PATH_ZU_DEINER_FONT_CSS.css"> -->
-
-  <style>
-    /* Nur damit GitHub-Seite neutral aussieht – beeinflusst den Rechner nicht. */
-    body { margin: 0; }
-  </style>
-</head>
-
-<body>
-
 <!-- Rentwereld Financing Calculator (drop-in block)
      - No Tailwind / no external fonts
      - Namespaced CSS (.rw-fin-*) to avoid collisions
-     - Uses controlled font via CSS variable (fixes GitHub Arial fallback)
+     - Uses theme fonts by default (inherits), colors via CSS variables
      - Works with multiple instances on the same page
 -->
 <section class="rw-fin" data-rw-finance-calculator
@@ -44,23 +23,8 @@
       --rw-shadow:0 8px 30px rgba(0,0,0,.06);
       --rw-shadow-soft:0 2px 12px rgba(0,0,0,.04);
 
-      /* ✅ FONT FIX:
-         Setze hier die gewünschte Schrift. Sobald du die Rentwereld-Font-Family kennst,
-         ersetze diese Zeile 1:1 durch deren Stack.
-         Beispiel (Platzhalter): --rw-font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-      */
-      --rw-font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-
       color: var(--rw-black);
-      font-family: var(--rw-font-family);
-    }
-
-    /* Ensure controls inherit same font (Browser setzen sonst gern Arial) */
-    .rw-fin button,
-    .rw-fin input,
-    .rw-fin select,
-    .rw-fin textarea{
-      font-family: inherit;
+      font-family: inherit; /* inherit theme */
     }
 
     .rw-fin *{ box-sizing:border-box; }
@@ -77,10 +41,7 @@
     .rw-fin__control,
     .rw-fin__btnBlack,
     .rw-fin__btnCalc,
-    .rw-fin__badge,
-    .rw-fin__cta,
-    .rw-fin__btnYellow,
-    .rw-fin__phone{
+    .rw-fin__badge{
       border-radius:0 !important;
     }
 
@@ -95,7 +56,9 @@
       margin:0 auto;
       padding: clamp(24px, 3.5vw, 56px) 16px;
     }
+    /* Top area stays white; reduce bottom padding so gray band starts naturally */
     .rw-fin__wrap--top{ padding-bottom: 0; }
+    /* Band content should not add extra vertical padding (band controls it) */
     .rw-fin__wrap--band{ padding: 0 16px; }
 
     .rw-fin__title{
@@ -107,7 +70,7 @@
     }
     .rw-fin__title span{ color: var(--rw-yellow); }
 
-    /* ===== Tabs ===== */
+    /* ===== Tabs (connected, square-ish, thin border) ===== */
     .rw-fin__tabs{
       display:flex;
       gap:0;
@@ -149,6 +112,7 @@
       align-items:flex-end;
       justify-content:space-between;
       box-shadow: var(--rw-shadow-soft);
+      margin-bottom: 0; /* important: no gap above gray band */
     }
     .rw-fin__infoLeft{ flex:1; min-width: 0; }
     .rw-fin__card{
@@ -221,9 +185,9 @@
     .rw-fin__arrow{ transition: transform .15s ease; }
     .rw-fin__btnBlack:hover .rw-fin__arrow{ transform: translateX(3px); }
 
-    /* ===== Gray band ===== */
+    /* ===== Gray band (full-width like site sections) ===== */
     .rw-fin__band{
-      margin-top: 22px;
+      margin-top: 0; /* ✅ moved up to touch end of info block */
       background: var(--rw-gray);
       padding: clamp(18px, 2.8vw, 34px) 0 clamp(34px, 4.2vw, 96px);
     }
@@ -398,63 +362,6 @@
 
     .rw-fin__resBlock{ margin-top: 96px; }
     .rw-fin__rateMeta{ margin-top: -18px; }
-
-    /* ===== Contact CTA ===== */
-    .rw-fin__cta{
-      margin-top: 18px;
-      background: #000;
-      color: #fff;
-      padding: clamp(18px, 2.8vw, 32px);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 18px;
-      flex-wrap: wrap;
-    }
-    .rw-fin__ctaTitle{
-      margin:0;
-      font-size: clamp(18px, 2.2vw, 26px);
-      font-weight: 900;
-      line-height: 1.15;
-    }
-    .rw-fin__ctaTitle span{ color: var(--rw-yellow); }
-    .rw-fin__ctaText{
-      margin: 8px 0 0 0;
-      font-size: 13px;
-      font-weight: 600;
-      color: rgba(255,255,255,0.78);
-      max-width: 640px;
-    }
-    .rw-fin__ctaRight{
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    .rw-fin__btnYellow{
-      background: var(--rw-yellow);
-      color: #000;
-      border:0;
-      padding: 12px 16px;
-      font-weight: 900;
-      text-transform: none;
-      letter-spacing: .02em;
-      font-size: 11px;
-      display:inline-flex;
-      align-items:center;
-      gap: 10px;
-      transition: transform .15s ease, filter .15s ease, background-color .15s ease;
-    }
-    .rw-fin__btnYellow:hover{ background: var(--rw-yellow-hover); transform: translateY(-1px); filter: brightness(1.02); }
-    .rw-fin__btnYellow:active{ transform: translateY(0); filter:none; }
-
-    .rw-fin__phone{
-      font-size: 12px;
-      font-weight: 800;
-      color: rgba(255,255,255,0.88);
-      padding: 10px 12px;
-      border: 1px solid rgba(255,255,255,0.18);
-    }
   </style>
 
   <div class="rw-fin__wrap rw-fin__wrap--top">
@@ -532,22 +439,6 @@
 
         </div>
       </section>
-
-      <section class="rw-fin__cta" aria-label="Kontakt CTA">
-        <div>
-          <h3 class="rw-fin__ctaTitle">Mieten ohne Hektik? <span>Fordern Sie ein Angebot an.</span></h3>
-          <p class="rw-fin__ctaText">
-            Sie möchten ein verbindliches Angebot oder haben Fragen zur passenden Laufzeit/Restwert-Kombination? Wir helfen schnell weiter.
-          </p>
-        </div>
-        <div class="rw-fin__ctaRight">
-          <a class="rw-fin__btnYellow" data-rw-cta href="https://www.rentwereld.nl/de/kontakt/">
-            <span data-rw-cta-text>Kostenloses Angebot</span> <span aria-hidden="true">→</span>
-          </a>
-          <span class="rw-fin__phone" data-rw-phone></span>
-        </div>
-      </section>
-
     </div>
   </div>
 
@@ -617,24 +508,14 @@
           residual: root.querySelector('[data-rw-residual]'),
           calcBtn: root.querySelector('[data-rw-calc]'),
           result: root.querySelector('[data-rw-result]'),
-          badge: root.querySelector('[data-rw-badge]'),
-
-          cta: root.querySelector('[data-rw-cta]'),
-          ctaText: root.querySelector('[data-rw-cta-text]'),
-          phone: root.querySelector('[data-rw-phone]')
+          badge: root.querySelector('[data-rw-badge]')
         };
 
         const cfg = {
           ctaUrl: root.getAttribute('data-cta-url') || '#',
-          ctaText: root.getAttribute('data-cta-text') || 'Kostenloses Angebot',
-          phone: root.getAttribute('data-phone') || '',
           homeUrl: root.getAttribute('data-home-url') || '#',
           aboutUrl: root.getAttribute('data-about-url') || '#'
         };
-
-        if (els.cta) els.cta.href = cfg.ctaUrl;
-        if (els.ctaText) els.ctaText.textContent = cfg.ctaText;
-        if (els.phone) els.phone.textContent = cfg.phone;
 
         function setBadgeVisible(visible){
           if (!els.badge) return;
@@ -693,17 +574,9 @@
           const { raw, price, duration, residual } = getInputs();
 
           const allPresent = !!raw && !!duration && !!residual;
-          if (!allPresent) {
-            setBadgeVisible(true);
-            setResult('0,00 €');
-            return;
-          }
+          if (!allPresent) { setBadgeVisible(true); setResult('0,00 €'); return; }
 
-          if (!Number.isFinite(price) || price <= 0) {
-            setBadgeVisible(true);
-            setResult('0,00 €');
-            return;
-          }
+          if (!Number.isFinite(price) || price <= 0) { setBadgeVisible(true); setResult('0,00 €'); return; }
 
           const factor = (factors[residual] || {})[duration];
           if (factor === null || typeof factor === 'undefined') {
@@ -740,18 +613,10 @@
           btn.addEventListener('click', () => setActiveTab(btn.getAttribute('data-rw-tab')));
         });
 
-        if (els.calcBtn){
-          els.calcBtn.addEventListener('click', () => calculate());
-        }
+        els.calcBtn?.addEventListener('click', () => calculate());
 
-        els.duration?.addEventListener('change', () => {
-          refreshOptionAvailability();
-          resetOutput();
-        });
-        els.residual?.addEventListener('change', () => {
-          refreshOptionAvailability();
-          resetOutput();
-        });
+        els.duration?.addEventListener('change', () => { refreshOptionAvailability(); resetOutput(); });
+        els.residual?.addEventListener('change', () => { refreshOptionAvailability(); resetOutput(); });
         els.price?.addEventListener('input', () => resetOutput());
 
         els.price?.addEventListener('blur', () => {
@@ -766,6 +631,3 @@
     })();
   </script>
 </section>
-
-</body>
-</html>
